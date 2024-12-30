@@ -1,16 +1,45 @@
 package com.example.blink.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+
+@Entity
 public class ChatMessage {
+
+    @Id
+    // Changed from Long to String to accommodate non-numeric values like UUIDs
+    private String id;
+
+    @Enumerated(EnumType.STRING)
+    private MessageType type;
+
+    private String content;
+
+    @ManyToOne
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User sender;
+
+    @ManyToOne
+    @JoinColumn(name = "recipient_id")
+    private User recipient;
+
     public enum MessageType {
-        CHAT, JOIN, LEAVE
+        TEXT, IMAGE, FILE
     }
 
-    private MessageType type;
-    private String content;
-    private String sender;
-    private String recipient; // Add this field for user-to-user messaging
-
     // Getters and Setters
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public MessageType getType() {
         return type;
     }
@@ -27,19 +56,19 @@ public class ChatMessage {
         this.content = content;
     }
 
-    public String getSender() {
+    public User getSender() {
         return sender;
     }
 
-    public void setSender(String sender) {
+    public void setSender(User sender) {
         this.sender = sender;
     }
 
-    public String getRecipient() {
+    public User getRecipient() {
         return recipient;
     }
 
-    public void setRecipient(String recipient) {
+    public void setRecipient(User recipient) {
         this.recipient = recipient;
     }
 }

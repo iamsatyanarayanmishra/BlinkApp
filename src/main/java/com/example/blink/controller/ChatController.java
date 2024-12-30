@@ -1,9 +1,13 @@
 package com.example.blink.controller;
 
+import com.example.blink.model.ChatMessage;
 import com.example.blink.model.User;
 import com.example.blink.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +19,9 @@ public class ChatController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+
     // Fetch all users (chats) - You can customize the data to fetch from the User model
     @GetMapping("/{username}")
     public ResponseEntity<List<User>> getChats(@PathVariable String username, @RequestParam(name = "search", required = false) String search) {
@@ -22,17 +29,16 @@ public class ChatController {
         return ResponseEntity.ok(users);
     }
 
-    // Archive a chat (update user preferences)
-    @PostMapping("/{username}/archive")
-    public ResponseEntity<User> archiveChat(@PathVariable String username) {
-        User updatedUser = userService.archiveChat(username);
-        return ResponseEntity.ok(updatedUser);
+    @MessageMapping("/message")
+    @SendTo("/chatroom/public")
+    public ChatMessage receiveMessage(@RequestBody ChatMessage message) throws InterruptedException {
+        System.out.println(message);
+        return message;
     }
 
-    // Delete a chat (remove user)
-    @DeleteMapping("/{username}")
-    public ResponseEntity<Void> deleteChat(@PathVariable long username) {
-        userService.deleteChat(username);
-        return ResponseEntity.noContent().build();
+    @MessageMapping("/private-message")
+    public ChatMessage privateMessage(@RequestBody ChatMessage message){
+        simpMessagingTemplate.convertAndSendToUser(message.getRecipient().getUserName(),"/private",message);
+        return message;
     }
 }

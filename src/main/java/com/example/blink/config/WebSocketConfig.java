@@ -5,22 +5,30 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
-    public void configureMessageBroker(MessageBrokerRegistry config) {
-        // Enable simple broker for public topics and user-specific destinations
-        config.enableSimpleBroker("/topic", "/queue");
-        config.setApplicationDestinationPrefixes("/app"); // Prefix for client-to-server messages
-        config.setUserDestinationPrefix("/user"); // Prefix for user-specific destinations
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS();
+
     }
 
     @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // Register WebSocket endpoint for clients to connect
-        registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS();
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+       registry.setApplicationDestinationPrefixes("/app");
+       registry.enableSimpleBroker("/chatroom","/user");
+       registry.setUserDestinationPrefix("/user");
+
+    }
+
+    @Override
+    public void configureWebSocketTransport(WebSocketTransportRegistration registry) {
+        registry.setSendTimeLimit(60 * 1000)
+                .setSendBufferSizeLimit(50 * 1024 * 1024)
+                .setMessageSizeLimit(50 * 1024 * 1024);
     }
 }

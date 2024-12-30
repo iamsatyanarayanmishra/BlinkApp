@@ -1,13 +1,14 @@
 package com.example.blink.model;
 
-import java.util.List;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 
+import java.util.List;
+
 @Entity
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,20 +31,36 @@ public class User {
 
     private String password;
 
-    // Existing fields
-    private List<String> messages;  // List of messages for the user (as an example)
-    
-    // Getters and setters for messages
-    public List<String> getMessages() {
-        return messages;
+    // One-to-Many: Messages sent by this user
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChatMessage> sentMessages;
+
+    // One-to-Many: Messages received by this user
+    @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChatMessage> receivedMessages;
+
+    // Default constructor
+    public User() {
     }
 
-    public void setMessages(List<String> messages) {
-        this.messages = messages;
+    // Getters and Setters for relationships
+    public List<ChatMessage> getSentMessages() {
+        return sentMessages;
     }
 
-    // Getters and Setters
+    public void setSentMessages(List<ChatMessage> sentMessages) {
+        this.sentMessages = sentMessages;
+    }
 
+    public List<ChatMessage> getReceivedMessages() {
+        return receivedMessages;
+    }
+
+    public void setReceivedMessages(List<ChatMessage> receivedMessages) {
+        this.receivedMessages = receivedMessages;
+    }
+
+    // Other Getters and Setters
     public Long getId() {
         return id;
     }
@@ -92,12 +109,12 @@ public class User {
         this.number = number;
     }
 
-    public void setPreference(String preference) {
-        this.preference = preference;
-    }
-
     public String getPreference() {
         return preference;
+    }
+
+    public void setPreference(String preference) {
+        this.preference = preference;
     }
 
     public String getPassword() {
