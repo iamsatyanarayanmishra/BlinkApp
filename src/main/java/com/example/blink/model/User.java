@@ -1,5 +1,9 @@
 package com.example.blink.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -7,6 +11,7 @@ import jakarta.validation.constraints.Pattern;
 import java.util.List;
 
 @Entity
+@JsonDeserialize(using = UserDeserializer.class)
 public class User {
 
     @Id
@@ -32,15 +37,24 @@ public class User {
     private String password;
 
     // One-to-Many: Messages sent by this user
+    @JsonIgnore
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChatMessage> sentMessages;
 
     // One-to-Many: Messages received by this user
+    @JsonIgnore
     @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChatMessage> receivedMessages;
 
     // Default constructor
     public User() {
+    }
+
+    // Factory method for deserialization
+    @JsonCreator
+    public User(@JsonProperty("id") Long id, @JsonProperty("username") String username) {
+        this.id = id;
+        this.username = username;
     }
 
     // Getters and Setters for relationships

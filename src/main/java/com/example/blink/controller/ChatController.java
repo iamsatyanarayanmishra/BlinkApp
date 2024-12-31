@@ -6,6 +6,7 @@ import com.example.blink.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -31,13 +32,19 @@ public class ChatController {
 
     @MessageMapping("/message")
     @SendTo("/chatroom/public")
-    public ChatMessage receiveMessage(@RequestBody ChatMessage message) throws InterruptedException {
+    public ChatMessage receiveMessage(@Payload ChatMessage message) throws InterruptedException {
+        if (message.getSender() == null) {
+            throw new IllegalArgumentException("Sender not found");
+        }
         System.out.println(message);
         return message;
     }
 
     @MessageMapping("/private-message")
-    public ChatMessage privateMessage(@RequestBody ChatMessage message){
+    public ChatMessage privateMessage(@Payload ChatMessage message){
+        if (message.getRecipient() == null) {
+            throw new IllegalArgumentException("Recipient not found");
+        }
         simpMessagingTemplate.convertAndSendToUser(message.getRecipient().getUserName(),"/private",message);
         return message;
     }
